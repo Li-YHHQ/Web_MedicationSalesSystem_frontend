@@ -99,14 +99,14 @@ const handleFocus = () => {
 
 <style scoped>
 .base-input {
-  margin-bottom: 20px;
+  margin-bottom: var(--spacing-lg);
 }
 
 .input-label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: var(--spacing-sm);
   color: var(--text-primary);
-  font-weight: 500;
+  font-weight: 600;
   font-size: 14px;
 }
 
@@ -123,17 +123,27 @@ const handleFocus = () => {
 
 .input-field {
   width: 100%;
-  border: 1px solid var(--border-base);
+  border: 1px solid var(--border-light);
   border-radius: var(--border-radius-base);
   font-size: 14px;
-  transition: all 0.3s;
+  transition: var(--transition-fast);
   outline: none;
   background: var(--bg-color);
+  color: var(--text-primary);
+  font-family: inherit;
+}
+
+.input-field::placeholder {
+  color: var(--text-placeholder);
+}
+
+.input-field:hover:not(:disabled):not(:readonly) {
+  border-color: var(--primary-light);
 }
 
 .input-field:focus {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+  box-shadow: 0 0 0 3px rgba(19, 194, 194, 0.1);
 }
 
 .input-field--error {
@@ -142,34 +152,39 @@ const handleFocus = () => {
 
 .input-field--error:focus {
   border-color: var(--danger-color);
-  box-shadow: 0 0 0 2px rgba(245, 108, 108, 0.2);
+  box-shadow: 0 0 0 3px rgba(255, 77, 79, 0.1);
 }
 
 .input-field--disabled {
-  background: var(--bg-page);
+  background: var(--bg-light);
   color: var(--text-placeholder);
   cursor: not-allowed;
+  border-color: var(--border-lighter);
 }
 
 .input-field--readonly {
-  background: var(--bg-page);
+  background: var(--bg-light);
   color: var(--text-regular);
+  cursor: default;
 }
 
 /* 尺寸 */
 .input-field--small {
-  padding: 8px 12px;
-  font-size: 12px;
+  padding: 6px 12px;
+  font-size: 13px;
+  height: 32px;
 }
 
 .input-field--medium {
-  padding: 12px 16px;
+  padding: 10px 16px;
   font-size: 14px;
+  height: 42px;
 }
 
 .input-field--large {
-  padding: 16px 20px;
+  padding: 14px 20px;
   font-size: 16px;
+  height: 48px;
 }
 
 /* 后缀图标 */
@@ -178,6 +193,7 @@ const handleFocus = () => {
   right: 12px;
   color: var(--text-secondary);
   font-size: 14px;
+  pointer-events: none;
 }
 
 .input-field--small + .suffix-icon {
@@ -194,14 +210,17 @@ const handleFocus = () => {
 .error-message {
   color: var(--danger-color);
   font-size: 12px;
-  margin-top: 4px;
-  line-height: 1.4;
+  margin-top: 6px;
+  line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
 }
 
 .helper-text {
   color: var(--text-secondary);
   font-size: 12px;
-  margin-top: 4px;
-  line-height: 1.4;
+  margin-top: 6px;
+  line-height: 1.5;
 }
 </style>

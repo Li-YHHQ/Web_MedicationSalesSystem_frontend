@@ -104,31 +104,203 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.page { padding: 8px; }
-.actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+.page {
+  padding: var(--spacing-lg);
+  max-width: 1400px;
+  margin: 0 auto;
+}
 
-.section { margin-top: 24px; }
-.section h2 { margin: 0 0 12px; font-size: 16px; }
+.actions {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  margin-top: var(--spacing-lg);
+}
 
-.banner-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
-.banner-item { border: 1px solid var(--border-light); border-radius: var(--border-radius-base); overflow: hidden; background: var(--bg-color); }
-.banner-item img { width: 100%; height: 300px; object-fit: cover; display: block; }
-.banner-title { padding: 8px 10px; color: var(--text-regular); font-size: 13px; }
+.section {
+  margin-top: var(--spacing-xl);
+}
 
-.chip-list { display: flex; gap: 10px; flex-wrap: wrap; }
-.chip { border: 1px solid var(--border-base); background: var(--bg-color); color: var(--text-regular); border-radius: 999px; padding: 6px 10px; cursor: pointer; }
-.chip:hover { border-color: var(--primary-color); color: var(--primary-color); }
+.section h2 {
+  margin: 0 0 var(--spacing-lg);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  position: relative;
+  padding-left: 12px;
+}
 
-.product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-.product-card { border: 1px solid var(--border-light); border-radius: var(--border-radius-base); background: var(--bg-color); padding: 10px; cursor: pointer; transition: box-shadow 0.2s; }
-.product-card:hover { box-shadow: var(--box-shadow-light); }
-.product-img { height: 200px; border-radius: var(--border-radius-base); overflow: hidden; background: var(--bg-page); display: flex; align-items: center; justify-content: center; }
-.product-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.img-placeholder { color: var(--text-placeholder); font-size: 12px; }
-.product-name { margin-top: 8px; font-weight: 600; color: var(--text-primary); }
-.product-meta { margin-top: 6px; display: flex; gap: 8px; align-items: center; }
-.price { color: var(--danger-color); font-weight: 600; }
-.tag { font-size: 12px; padding: 2px 6px; border-radius: 6px; border: 1px solid var(--warning-color); color: var(--warning-color); }
+.section h2::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 20px;
+  background: var(--primary-gradient);
+  border-radius: 2px;
+}
 
-.error { margin-top: 16px; color: var(--danger-color); }
+/* 轮播图样式优化 */
+.banner-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.banner-item {
+  border-radius: var(--border-radius-large);
+  overflow: hidden;
+  background: var(--bg-color);
+  box-shadow: var(--box-shadow-card);
+  transition: var(--transition-base);
+  cursor: pointer;
+}
+
+.banner-item:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--box-shadow-hover);
+}
+
+.banner-item img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  display: block;
+}
+
+.banner-title {
+  padding: var(--spacing-md) var(--spacing-lg);
+  color: var(--text-regular);
+  font-size: 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(247,248,250,0.5) 100%);
+}
+
+/* 分类样式优化 */
+.chip-list {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.chip {
+  border: 1px solid var(--border-light);
+  background: var(--bg-color);
+  color: var(--text-regular);
+  border-radius: var(--border-radius-round);
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  box-shadow: var(--box-shadow-card);
+  font-weight: 500;
+}
+
+.chip:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  background: var(--bg-light);
+  transform: translateY(-2px);
+  box-shadow: var(--box-shadow-hover);
+}
+
+/* 药品卡片样式优化 */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.product-card {
+  border-radius: var(--border-radius-large);
+  background: var(--bg-color);
+  padding: var(--spacing-md);
+  cursor: pointer;
+  transition: var(--transition-base);
+  box-shadow: var(--box-shadow-card);
+  border: 1px solid var(--border-lighter);
+}
+
+.product-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--box-shadow-hover);
+  border-color: var(--primary-light);
+}
+
+.product-img {
+  height: 200px;
+  border-radius: var(--border-radius-base);
+  overflow: hidden;
+  background: var(--bg-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.product-img::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--border-radius-base);
+  border: 1px solid var(--border-extra-light);
+  pointer-events: none;
+}
+
+.product-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.img-placeholder {
+  color: var(--text-placeholder);
+  font-size: 12px;
+}
+
+.product-name {
+  margin-top: var(--spacing-md);
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 15px;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.product-meta {
+  margin-top: var(--spacing-sm);
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.price {
+  color: var(--accent-color);
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.tag {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: var(--border-radius-small);
+  background: linear-gradient(135deg, #FFF7E6 0%, #FFE7BA 100%);
+  border: 1px solid var(--warning-color);
+  color: var(--warning-color);
+  font-weight: 500;
+}
+
+.error {
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-md);
+  color: var(--danger-color);
+  background: #FFF1F0;
+  border-radius: var(--border-radius-base);
+  border-left: 4px solid var(--danger-color);
+}
 </style>

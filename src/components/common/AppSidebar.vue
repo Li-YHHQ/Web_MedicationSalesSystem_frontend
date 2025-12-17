@@ -52,31 +52,33 @@ const isAdmin = computed(() => role.value === 'ADMIN')
 
 <style scoped>
 .app-sidebar {
-  width: 250px;
+  width: 240px;
   background: var(--bg-color);
-  border-right: 1px solid var(--border-base);
-  height: calc(100vh - 60px);
+  border-right: 1px solid var(--border-lighter);
+  height: calc(100vh - 64px);
   position: fixed;
   left: 0;
-  top: 60px;
+  top: 64px;
   overflow-y: auto;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.03);
 }
 
 .sidebar-content {
-  padding: 20px 0;
+  padding: var(--spacing-lg) var(--spacing-md);
 }
 
 .menu-group {
-  margin-bottom: 20px;
+  margin-bottom: var(--spacing-xl);
 }
 
 .menu-group h3 {
   color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
   text-transform: uppercase;
-  padding: 0 20px;
-  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+  padding: 0 var(--spacing-md);
+  margin-bottom: var(--spacing-md);
 }
 
 .menu-list {
@@ -84,16 +86,44 @@ const isAdmin = computed(() => role.value === 'ADMIN')
 }
 
 .menu-item {
-  display: block;
-  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  padding: 10px var(--spacing-md);
+  margin: 4px 0;
   color: var(--text-regular);
   text-decoration: none;
-  transition: all 0.3s;
+  transition: var(--transition-fast);
+  border-radius: var(--border-radius-base);
+  font-weight: 500;
+  position: relative;
 }
 
-.menu-item:hover,
+.menu-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 0;
+  background: var(--primary-gradient);
+  border-radius: 0 2px 2px 0;
+  transition: height 0.3s ease;
+}
+
+.menu-item:hover {
+  background: var(--bg-light);
+  color: var(--primary-color);
+  transform: translateX(2px);
+}
+
 .menu-item.router-link-exact-active {
-  background: var(--primary-color);
-  color: white;
+  background: linear-gradient(90deg, rgba(19, 194, 194, 0.1) 0%, rgba(19, 194, 194, 0.05) 100%);
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.menu-item.router-link-exact-active::before {
+  height: 20px;
 }
 </style>
