@@ -9,7 +9,6 @@
     </div>
 
     <div class="section">
-      <h2>轮播</h2>
       <div v-if="loadingBanners">加载中...</div>
       <div v-else-if="banners.length === 0">暂无轮播</div>
       <div v-else class="banner-list">
@@ -111,19 +110,19 @@ onMounted(async () => {
 .section { margin-top: 24px; }
 .section h2 { margin: 0 0 12px; font-size: 16px; }
 
-.banner-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.banner-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
 .banner-item { border: 1px solid var(--border-light); border-radius: var(--border-radius-base); overflow: hidden; background: var(--bg-color); }
-.banner-item img { width: 100%; height: 120px; object-fit: cover; display: block; }
+.banner-item img { width: 100%; height: 300px; object-fit: cover; display: block; }
 .banner-title { padding: 8px 10px; color: var(--text-regular); font-size: 13px; }
 
 .chip-list { display: flex; gap: 10px; flex-wrap: wrap; }
 .chip { border: 1px solid var(--border-base); background: var(--bg-color); color: var(--text-regular); border-radius: 999px; padding: 6px 10px; cursor: pointer; }
 .chip:hover { border-color: var(--primary-color); color: var(--primary-color); }
 
-.product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
 .product-card { border: 1px solid var(--border-light); border-radius: var(--border-radius-base); background: var(--bg-color); padding: 10px; cursor: pointer; transition: box-shadow 0.2s; }
 .product-card:hover { box-shadow: var(--box-shadow-light); }
-.product-img { height: 120px; border-radius: var(--border-radius-base); overflow: hidden; background: var(--bg-page); display: flex; align-items: center; justify-content: center; }
+.product-img { height: 200px; border-radius: var(--border-radius-base); overflow: hidden; background: var(--bg-page); display: flex; align-items: center; justify-content: center; }
 .product-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .img-placeholder { color: var(--text-placeholder); font-size: 12px; }
 .product-name { margin-top: 8px; font-weight: 600; color: var(--text-primary); }
