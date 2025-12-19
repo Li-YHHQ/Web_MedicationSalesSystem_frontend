@@ -27,25 +27,24 @@ import AppFooter from '@/components/common/AppFooter.vue'
 .layout-main {
   display: flex;
   flex: 1;
-  margin-top: 60px; /* Header height */
+  margin-top: 64px; /* Header height */
 }
 
 .main-content {
   flex: 1;
-  margin-left: 250px; /* Sidebar width */
-  padding: 20px;
+  margin-left: 240px; /* Sidebar width */
   background: var(--bg-page);
-  min-height: calc(100vh - 60px - 60px); /* Full height - header - footer */
+  min-height: calc(100vh - 64px);
+  overflow-y: auto;
 }
 
 @media (max-width: 768px) {
   .layout-main {
     flex-direction: column;
   }
-  
+
   .main-content {
     margin-left: 0;
-    padding: 16px;
   }
 }
 </style>
