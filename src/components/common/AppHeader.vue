@@ -48,43 +48,73 @@ const logout = () => {
 <style scoped>
 .app-header {
   background: var(--bg-color);
-  box-shadow: var(--box-shadow-base);
-  height: 60px;
+  box-shadow: 0 2px 8px rgba(19, 194, 194, 0.08);
+  height: 64px;
   position: sticky;
   top: 0;
   z-index: 100;
+  backdrop-filter: blur(8px);
 }
 
 .header-content {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
+  padding: 0 var(--spacing-xl);
 }
 
 .logo h1 {
-  color: var(--primary-color);
-  font-size: 20px;
-  font-weight: 600;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
 }
 
 .nav-menu {
   display: flex;
-  gap: 30px;
+  gap: var(--spacing-xl);
 }
 
 .nav-item {
   color: var(--text-regular);
   text-decoration: none;
   font-weight: 500;
-  transition: color 0.3s;
+  transition: var(--transition-fast);
+  padding: 8px 12px;
+  border-radius: var(--border-radius-base);
+  position: relative;
 }
 
-.nav-item:hover,
+.nav-item::after {
+  content: '';
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 20px;
+  height: 3px;
+  background: var(--primary-gradient);
+  border-radius: 2px;
+  transition: transform 0.3s ease;
+}
+
+.nav-item:hover {
+  color: var(--primary-color);
+  background: var(--bg-light);
+}
+
 .nav-item.router-link-active {
   color: var(--primary-color);
+  font-weight: 600;
+}
+
+.nav-item.router-link-active::after {
+  transform: translateX(-50%) scaleX(1);
 }
 </style>
