@@ -23,7 +23,18 @@
 
         <!-- Carousel -->
         <div v-if="banners.length > 0" class="carousel-container">
-          <div class="carousel" @mouseenter="pauseAutoPlay" @mouseleave="resumeAutoPlay">
+          <div
+            class="carousel"
+            @mouseenter="pauseAutoPlay"
+            @mouseleave="resumeAutoPlay"
+            @mousedown="handleMouseDown"
+            @mousemove="handleMouseMove"
+            @mouseup="handleMouseUp"
+            @mouseleave="handleMouseUp"
+            @touchstart="handleTouchStart"
+            @touchmove="handleTouchMove"
+            @touchend="handleTouchEnd"
+          >
             <transition name="slide">
               <div :key="currentSlide" class="carousel-slide">
                 <img
@@ -32,28 +43,13 @@
                   class="carousel-image"
                   @click="handleBannerClick(banners[currentSlide])"
                   :style="{ cursor: banners[currentSlide].linkUrl ? 'pointer' : 'default' }"
+                  draggable="false"
                 />
                 <div v-if="banners[currentSlide].title" class="carousel-caption">
                   <h3>{{ banners[currentSlide].title }}</h3>
                 </div>
               </div>
             </transition>
-
-            <!-- Navigation Arrows -->
-            <button
-              class="carousel-arrow carousel-arrow-left"
-              @click="prevSlide"
-              aria-label="上一张"
-            >
-              ‹
-            </button>
-            <button
-              class="carousel-arrow carousel-arrow-right"
-              @click="nextSlide"
-              aria-label="下一张"
-            >
-              ›
-            </button>
 
             <!-- Indicators -->
             <div class="carousel-indicators">
@@ -157,6 +153,12 @@ const loadingCategories = ref(false)
 const loadingProducts = ref(false)
 const error = ref('')
 
+// Drag/Swipe state
+const isDragging = ref(false)
+const startX = ref(0)
+const currentX = ref(0)
+const dragThreshold = 50 // Minimum drag distance to trigger slide change
+
 // Carousel functions
 const nextSlide = () => {
   if (banners.value.length > 0) {
@@ -178,7 +180,7 @@ const startAutoPlay = () => {
   if (banners.value.length > 1) {
     autoPlayInterval.value = window.setInterval(() => {
       nextSlide()
-    }, 5000) // 5 seconds
+    }, 2000) // 2 seconds
   }
 }
 
@@ -198,6 +200,11 @@ const resumeAutoPlay = () => {
 }
 
 const handleBannerClick = (banner: Banner) => {
+  // Don't trigger click if we were dragging
+  if (isDragging.value) {
+    return
+  }
+
   if (banner.linkUrl) {
     // Check if it's an external URL
     if (banner.linkUrl.startsWith('http://') || banner.linkUrl.startsWith('https://')) {
@@ -207,6 +214,81 @@ const handleBannerClick = (banner: Banner) => {
       router.push(banner.linkUrl)
     }
   }
+}
+
+// Mouse drag handlers
+const handleMouseDown = (e: MouseEvent) => {
+  isDragging.value = false
+  startX.value = e.clientX
+  currentX.value = e.clientX
+}
+
+const handleMouseMove = (e: MouseEvent) => {
+  if (startX.value === 0) return
+  currentX.value = e.clientX
+  const diff = Math.abs(currentX.value - startX.value)
+  if (diff > 5) {
+    isDragging.value = true
+  }
+}
+
+const handleMouseUp = () => {
+  if (startX.value === 0) return
+
+  const diff = currentX.value - startX.value
+
+  if (Math.abs(diff) > dragThreshold) {
+    if (diff > 0) {
+      // Dragged right, go to previous slide
+      prevSlide()
+    } else {
+      // Dragged left, go to next slide
+      nextSlide()
+    }
+  }
+
+  startX.value = 0
+  currentX.value = 0
+  // Reset isDragging after a short delay to prevent click
+  setTimeout(() => {
+    isDragging.value = false
+  }, 100)
+}
+
+// Touch handlers for mobile
+const handleTouchStart = (e: TouchEvent) => {
+  isDragging.value = false
+  startX.value = e.touches[0].clientX
+  currentX.value = e.touches[0].clientX
+}
+
+const handleTouchMove = (e: TouchEvent) => {
+  if (startX.value === 0) return
+  currentX.value = e.touches[0].clientX
+  const diff = Math.abs(currentX.value - startX.value)
+  if (diff > 5) {
+    isDragging.value = true
+  }
+}
+
+const handleTouchEnd = () => {
+  if (startX.value === 0) return
+
+  const diff = currentX.value - startX.value
+
+  if (Math.abs(diff) > dragThreshold) {
+    if (diff > 0) {
+      prevSlide()
+    } else {
+      nextSlide()
+    }
+  }
+
+  startX.value = 0
+  currentX.value = 0
+  setTimeout(() => {
+    isDragging.value = false
+  }, 100)
 }
 
 onMounted(async () => {
@@ -323,6 +405,12 @@ onUnmounted(() => {
   border-radius: var(--border-radius-xlarge);
   overflow: hidden;
   box-shadow: var(--box-shadow-dark);
+  user-select: none;
+  cursor: grab;
+}
+
+.carousel:active {
+  cursor: grabbing;
 }
 
 .carousel-slide {
@@ -353,41 +441,6 @@ onUnmounted(() => {
   font-size: 24px;
   font-weight: 600;
   text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-/* Carousel Arrows */
-.carousel-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.9);
-  border: none;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  font-size: 32px;
-  color: var(--primary-color);
-  cursor: pointer;
-  transition: var(--transition-fast);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  box-shadow: var(--box-shadow-card);
-}
-
-.carousel-arrow:hover {
-  background: white;
-  box-shadow: var(--box-shadow-hover);
-  transform: translateY(-50%) scale(1.1);
-}
-
-.carousel-arrow-left {
-  left: var(--spacing-md);
-}
-
-.carousel-arrow-right {
-  right: var(--spacing-md);
 }
 
 /* Carousel Indicators */

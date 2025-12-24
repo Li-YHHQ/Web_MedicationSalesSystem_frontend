@@ -5,7 +5,7 @@
         <h1>{{ appTitle }}</h1>
       </div>
       <nav class="nav-menu">
-        <router-link to="/" class="nav-item">首页</router-link>
+        <router-link to="/" class="nav-item" exact>首页</router-link>
         <router-link to="/products" class="nav-item">药品</router-link>
         <router-link to="/cart" class="nav-item">购物车</router-link>
         <router-link to="/orders" class="nav-item">订单</router-link>
@@ -109,12 +109,12 @@ const logout = () => {
   background: var(--bg-light);
 }
 
-.nav-item.router-link-active {
+.nav-item.router-link-exact-active {
   color: var(--primary-color);
   font-weight: 600;
 }
 
-.nav-item.router-link-active::after {
+.nav-item.router-link-exact-active::after {
   transform: translateX(-50%) scaleX(1);
 }
 </style>
