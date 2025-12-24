@@ -26,11 +26,10 @@
           <div
             class="carousel"
             @mouseenter="pauseAutoPlay"
-            @mouseleave="resumeAutoPlay"
+            @mouseleave="handleMouseLeave"
             @mousedown="handleMouseDown"
             @mousemove="handleMouseMove"
             @mouseup="handleMouseUp"
-            @mouseleave="handleMouseUp"
             @touchstart="handleTouchStart"
             @touchmove="handleTouchMove"
             @touchend="handleTouchEnd"
@@ -197,6 +196,17 @@ const pauseAutoPlay = () => {
 
 const resumeAutoPlay = () => {
   startAutoPlay()
+}
+
+const handleMouseLeave = () => {
+  // Reset drag state when mouse leaves the carousel
+  startX.value = 0
+  currentX.value = 0
+  setTimeout(() => {
+    isDragging.value = false
+  }, 100)
+  // Resume auto-play
+  resumeAutoPlay()
 }
 
 const handleBannerClick = (banner: Banner) => {
