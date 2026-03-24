@@ -5,10 +5,7 @@
       <!-- 系统标题 -->
       <div class="sidebar-header">
         <div class="sidebar-logo">💊</div>
-        <div class="sidebar-info">
-          <div class="sidebar-title">药店管理系统</div>
-          <div class="sidebar-username">{{ username }}</div>
-        </div>
+        <div class="sidebar-title">药店管理系统</div>
       </div>
 
       <!-- 导航菜单 -->
@@ -150,16 +147,6 @@ import { useRouter, useRoute } from 'vue-router'
 const router = useRouter()
 const route = useRoute()
 
-// 用户名
-const username = computed(() => {
-  try {
-    const u = localStorage.getItem('user')
-    return u ? (JSON.parse(u)?.username ?? '用户') : '用户'
-  } catch {
-    return '用户'
-  }
-})
-
 // 当前页面标题（手机端顶部栏使用）
 const currentTitle = computed(() => {
   return (route.meta?.title as string) ?? '药店管理系统'
@@ -237,16 +224,10 @@ function handleLogout(): void {
 }
 
 .sidebar-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.3;
-}
-
-.sidebar-username {
-  font-size: 12px;
-  color: var(--text-secondary);
-  margin-top: 2px;
 }
 
 /* 导航菜单 */
