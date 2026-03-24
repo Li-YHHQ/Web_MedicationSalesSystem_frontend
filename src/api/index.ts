@@ -1,7 +1,2 @@
 export * from './users'
-export * from './products'
-export * from './categories'
-export * from './banners'
 export * from './files'
-export * from './cart'
-export * from './orders'

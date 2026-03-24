@@ -1,6 +1,6 @@
 <template>
   <div class="page-placeholder">
-    <h1 class="page-title">📊 数据看板</h1>
+    <h1 class="page-title">📥 入库管理</h1>
     <p class="page-desc">此页面正在开发中，敬请期待。</p>
   </div>
 </template>
@@ -16,7 +16,6 @@
   justify-content: center;
   min-height: 60vh;
   text-align: center;
-  color: var(--text-secondary);
 }
 .page-title {
   font-size: 28px;
@@ -25,6 +24,7 @@
 }
 .page-desc {
   font-size: 15px;
+  color: var(--text-secondary);
   margin: 0;
 }
 </style>

@@ -9,10 +9,6 @@
       <BaseButton :loading="loading" block @click="handleLogin">登录</BaseButton>
       <p v-if="error" class="error">{{ error }}</p>
 
-      <p class="hint">
-        还没有账号？
-        <router-link to="/register">去注册</router-link>
-      </p>
     </div>
   </div>
 </template>

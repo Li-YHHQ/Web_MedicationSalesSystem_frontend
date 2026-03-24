@@ -1,191 +1,117 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import EmptyLayout from '@/layouts/EmptyLayout.vue'
+import MainLayout from '@/layouts/MainLayout.vue'
 
-const APP_TITLE = import.meta.env.VITE_APP_TITLE || '药品销售系统'
+const APP_TITLE = import.meta.env.VITE_APP_TITLE || '药店管理系统'
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
+    // 登录页（无需认证）
     {
-      path: '/',
-      component: DefaultLayout,
-      children: [
-        {
-          path: '',
-          name: 'Home',
-          component: () => import('@/pages/home/Home.vue'),
-          meta: {
-            title: '首页'
-          }
-        },
-        {
-          path: 'products',
-          name: 'ProductList',
-          component: () => import('@/pages/product/ProductList.vue'),
-          meta: {
-            title: '药品列表'
-          }
-        },
-        {
-          path: 'products/:id',
-          name: 'ProductDetail',
-          component: () => import('@/pages/product/ProductDetail.vue'),
-          meta: {
-            title: '药品详情'
-          }
-        },
-        {
-          path: 'cart',
-          name: 'Cart',
-          component: () => import('@/pages/cart/Cart.vue'),
-          meta: {
-            title: '购物车',
-            requiresAuth: true
-          }
-        },
-        {
-          path: 'orders',
-          name: 'OrderList',
-          component: () => import('@/pages/order/OrderList.vue'),
-          meta: {
-            title: '我的订单',
-            requiresAuth: true
-          }
-        },
-        {
-          path: 'orders/:id',
-          name: 'OrderDetail',
-          component: () => import('@/pages/order/OrderDetail.vue'),
-          meta: {
-            title: '订单详情',
-            requiresAuth: true
-          }
-        },
-        {
-          path: 'me',
-          name: 'Profile',
-          component: () => import('@/pages/me/Profile.vue'),
-          meta: {
-            title: '个人中心',
-            requiresAuth: true
-          }
-        },
-
-        {
-          path: 'admin/categories',
-          name: 'AdminCategories',
-          component: () => import('@/pages/admin/AdminCategories.vue'),
-          meta: {
-            title: '分类管理',
-            requiresAuth: true,
-            requiresAdmin: true
-          }
-        },
-        {
-          path: 'admin/products',
-          name: 'AdminProducts',
-          component: () => import('@/pages/admin/AdminProducts.vue'),
-          meta: {
-            title: '药品管理',
-            requiresAuth: true,
-            requiresAdmin: true
-          }
-        },
-        {
-          path: 'admin/banners',
-          name: 'AdminBanners',
-          component: () => import('@/pages/admin/AdminBanners.vue'),
-          meta: {
-            title: '轮播图管理',
-            requiresAuth: true,
-            requiresAdmin: true
-          }
-        },
-        {
-          path: 'admin/orders',
-          name: 'AdminOrders',
-          component: () => import('@/pages/admin/AdminOrders.vue'),
-          meta: {
-            title: '订单管理',
-            requiresAuth: true,
-            requiresAdmin: true
-          }
-        },
-        {
-          path: 'admin/users',
-          name: 'AdminUsers',
-          component: () => import('@/pages/admin/AdminUsers.vue'),
-          meta: {
-            title: '用户管理',
-            requiresAuth: true,
-            requiresAdmin: true
-          }
-        }
-      ]
-    },
-    {
-      path: '/',
+      path: '/login',
       component: EmptyLayout,
       children: [
         {
-          path: 'login',
+          path: '',
           name: 'Login',
           component: () => import('@/pages/auth/Login.vue'),
           meta: { title: '登录' }
-        },
-        {
-          path: 'register',
-          name: 'Register',
-          component: () => import('@/pages/auth/Register.vue'),
-          meta: { title: '注册' }
         }
       ]
     },
+
+    // 主布局路由（需要认证）
     {
-      path: '/:pathMatch(.*)*',
+      path: '/',
+      component: MainLayout,
+      redirect: '/dashboard',
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: 'dashboard',
+          name: 'Dashboard',
+          component: () => import('@/pages/dashboard/Dashboard.vue'),
+          meta: { requiresAuth: true, title: '数据看板' }
+        },
+        {
+          path: 'drugs',
+          name: 'DrugList',
+          component: () => import('@/pages/drug/DrugList.vue'),
+          meta: { requiresAuth: true, title: '药品管理' }
+        },
+        {
+          path: 'supplier',
+          name: 'SupplierList',
+          component: () => import('@/pages/supplier/SupplierList.vue'),
+          meta: { requiresAuth: true, title: '供应商管理' }
+        },
+        {
+          path: 'stock/in',
+          name: 'StockIn',
+          component: () => import('@/pages/stock/StockIn.vue'),
+          meta: { requiresAuth: true, title: '入库管理' }
+        },
+        {
+          path: 'stock/out',
+          name: 'StockOut',
+          component: () => import('@/pages/stock/StockOut.vue'),
+          meta: { requiresAuth: true, title: '出库管理' }
+        },
+        {
+          path: 'expire',
+          name: 'ExpireList',
+          component: () => import('@/pages/expire/ExpireList.vue'),
+          meta: { requiresAuth: true, title: '效期管理' }
+        },
+        {
+          path: 'finance',
+          name: 'Finance',
+          component: () => import('@/pages/finance/Finance.vue'),
+          meta: { requiresAuth: true, title: '财务统计' }
+        }
+      ]
+    },
+
+    // 404 页面
+    {
+      path: '/404',
       component: EmptyLayout,
       children: [
         {
           path: '',
           name: 'NotFound',
-          component: () => import('@/pages/NotFound.vue'),
-          meta: {
-            title: '页面不存在'
-          }
+          component: () => import('@/pages/error/NotFound.vue'),
+          meta: { title: '页面不存在' }
         }
       ]
+    },
+
+    // 捕获所有未匹配路由，重定向到 404
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: '/404'
     }
   ]
 })
 
-// 路由守卫 - 设置页面标题
-router.beforeEach((to: any, from: any, next: any) => {
-  if (to.meta?.title) {
-    document.title = `${to.meta.title} - ${APP_TITLE}`
-  } else {
-    document.title = APP_TITLE
-  }
+// 路由守卫
+router.beforeEach((to, _from, next) => {
+  // 设置页面标题
+  const title = to.meta?.title as string | undefined
+  document.title = title ? `${title} - ${APP_TITLE}` : APP_TITLE
 
   const token = localStorage.getItem('token')
-  const savedUser = localStorage.getItem('user')
-  const role = savedUser ? (() => {
-    try {
-      return JSON.parse(savedUser)?.role
-    } catch {
-      return null
-    }
-  })() : null
-
-  const requiresAuth = !!to.meta?.requiresAuth
-  const requiresAdmin = !!to.meta?.requiresAdmin
+  const requiresAuth = to.matched.some((r) => r.meta?.requiresAuth)
 
   if (requiresAuth && !token) {
-    next({ name: 'Login', query: { redirect: to.fullPath } })
+    next({ path: '/login', query: { redirect: to.fullPath } })
     return
   }
-  if (requiresAdmin && role !== 'ADMIN') {
-    next({ name: 'Home' })
+
+  // 已登录时访问登录页，跳转到看板
+  if (to.path === '/login' && token) {
+    next('/dashboard')
     return
   }
 

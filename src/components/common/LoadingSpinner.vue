@@ -1,48 +1,68 @@
 <template>
-  <div class="loading-spinner" v-if="loading">
-    <div class="spinner"></div>
-    <p>{{ message }}</p>
-  </div>
+  <teleport to="body">
+    <transition name="loading-fade">
+      <div v-if="isLoading" class="loading-overlay">
+        <div class="loading-box">
+          <div class="spinner"></div>
+          <p class="loading-text">加载中...</p>
+        </div>
+      </div>
+    </transition>
+  </teleport>
 </template>
 
 <script setup lang="ts">
-interface Props {
-  loading?: boolean
-  message?: string
-}
-
-withDefaults(defineProps<Props>(), {
-  loading: true,
-  message: '加载中...'
-})
+import { isLoading } from '@/utils/loading'
 </script>
 
 <style scoped>
-.loading-spinner {
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9000;
+}
+
+.loading-box {
+  background: #fff;
+  border-radius: var(--border-radius-large);
+  padding: 32px 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 40px;
+  gap: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
 .spinner {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border: 4px solid var(--border-light);
-  border-top: 4px solid var(--primary-color);
+  border-top-color: var(--primary-color);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 16px;
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  to { transform: rotate(360deg); }
 }
 
-.loading-spinner p {
+.loading-text {
+  margin: 0;
   color: var(--text-secondary);
   font-size: 14px;
+}
+
+.loading-fade-enter-active,
+.loading-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.loading-fade-enter-from,
+.loading-fade-leave-to {
+  opacity: 0;
 }
 </style>
