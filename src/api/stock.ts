@@ -22,6 +22,38 @@ export interface StockInListResult {
   list: StockInRecord[]
 }
 
+export interface StockOutRecord {
+  id: number
+  drugId: number
+  drugName: string
+  drugSpec: string
+  batchId: number
+  batchNo: string
+  expireDate: string
+  outType: number       // 1=销售 2=损耗 3=退货
+  outTypeName: string
+  quantity: number
+  retailPrice: number
+  costPrice: number
+  totalAmount: number
+  operatorUsername: string
+  createTime: string
+}
+
+export interface StockOutListResult {
+  total: number
+  list: StockOutRecord[]
+}
+
+export interface StockOutForm {
+  drugId: number
+  batchId: number
+  outType: number
+  quantity: number
+  retailPrice: number
+  remark: string
+}
+
 export interface StockBatch {
   id: number
   drugId: number
@@ -39,9 +71,13 @@ export interface ExpireItem {
   drugId: number
   drugName: string
   batchNo: string
+  produceDate?: string
   expireDate: string
+  stockInDate?: string
   quantity: number
-  daysLeft: number
+  costPrice?: number
+  status?: number
+  daysLeft?: number
 }
 
 export interface LowStockItem {
@@ -49,8 +85,11 @@ export interface LowStockItem {
   drugId: number
   drugName: string
   batchNo: string
+  expireDate?: string
   quantity: number
-  stockMin: number
+  costPrice?: number
+  status?: number
+  stockMin?: number
 }
 
 export interface StockInForm {
@@ -86,6 +125,14 @@ export const stockApi = {
   // 分页查询入库记录
   list: (params: Record<string, unknown>): Promise<ApiResponse<StockInListResult>> =>
     http.get<StockInListResult>('/stock/in', params),
+
+  // 出库
+  createOut: (data: StockOutForm): Promise<ApiResponse<void>> =>
+    http.post<void>('/stock/out', data),
+
+  // 分页查询出库记录
+  listOut: (params: Record<string, unknown>): Promise<ApiResponse<StockOutListResult>> =>
+    http.get<StockOutListResult>('/stock/out', params),
 
   // 查询药品批次
   getBatches: (drugId: number): Promise<ApiResponse<StockBatch[]>> =>
