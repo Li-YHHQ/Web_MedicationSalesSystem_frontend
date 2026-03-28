@@ -276,8 +276,8 @@
         </div>
       </div>
       <template #footer>
-        <BaseButton type="secondary" @click="closeModal">取消</BaseButton>
-        <BaseButton :loading="submitting" @click="submitForm">
+        <BaseButton type="secondary" data-testid="btn-drug-cancel" @click="closeModal">取消</BaseButton>
+        <BaseButton data-testid="btn-drug-submit" :loading="submitting" @click="submitForm">
           {{ isEdit ? '保 存' : '新 增' }}
         </BaseButton>
       </template>

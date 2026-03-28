@@ -127,6 +127,7 @@ watch(() => props.visible, (visible) => {
   justify-content: space-between;
   padding: 20px 24px;
   border-bottom: 1px solid var(--border-base);
+  flex-shrink: 0;
 }
 
 .modal-title {
@@ -161,6 +162,7 @@ watch(() => props.visible, (visible) => {
   padding: 24px;
   overflow-y: auto;
   flex: 1;
+  min-height: 0; /* 修复 flex 子元素默认 min-height:auto 导致内容撑破容器的问题 */
 }
 
 .modal-footer {
@@ -169,6 +171,7 @@ watch(() => props.visible, (visible) => {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 /* 响应式 */
