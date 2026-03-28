@@ -29,6 +29,11 @@ request.interceptors.request.use(
       config.params = { ...(config.params as Record<string, unknown>), _t: Date.now() }
     }
 
+    // FormData 请求删除默认的 Content-Type，让浏览器自动设置 multipart/form-data + boundary
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type']
+    }
+
     return config
   },
   (error: unknown) => {
