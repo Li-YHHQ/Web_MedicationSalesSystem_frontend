@@ -142,3 +142,6 @@ Thumbs.db
 *.tmp
 *.temp
 dist.zip
+tests/.auth/
+test-results/
+echo

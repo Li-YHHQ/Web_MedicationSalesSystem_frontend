@@ -182,8 +182,8 @@
         </div>
       </div>
       <template #footer>
-        <BaseButton type="secondary" @click="closeModal">取消</BaseButton>
-        <BaseButton :loading="submitting" @click="submitForm">
+        <BaseButton type="secondary" data-testid="btn-supplier-cancel" @click="closeModal">取消</BaseButton>
+        <BaseButton data-testid="btn-supplier-submit" :loading="submitting" @click="submitForm">
           {{ isEdit ? '保 存' : '新 增' }}
         </BaseButton>
       </template>
@@ -229,7 +229,7 @@ async function loadData(): Promise<void> {
   try {
     const params: Record<string, unknown> = { page: page.value, size: PAGE_SIZE }
     if (search.keyword.trim()) params.keyword = search.keyword.trim()
-    if (search.status !== '')  params.status  = Number(search.status)
+    params.status = search.status !== '' ? Number(search.status) : 1
 
     const res   = await supplierApi.list(params)
     list.value  = res.data.list
