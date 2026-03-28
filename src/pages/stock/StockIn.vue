@@ -17,6 +17,13 @@
       >
         ⚠️ 预警信息
       </button>
+      <button
+        class="tab-btn"
+        :class="{ 'tab-btn--active': activeTab === 'sync' }"
+        @click="switchTab('sync')"
+      >
+        🔄 库存同步
+      </button>
     </div>
 
     <!-- ========================================================
@@ -251,6 +258,165 @@
     </div>
 
     <!-- ========================================================
+         Tab 3：库存同步
+    ========================================================= -->
+    <div v-show="activeTab === 'sync'" class="tab-content">
+
+      <!-- 说明文字 + 上传区 -->
+      <div class="sync-upload-card">
+        <p class="sync-desc">
+          上传最新库存 Excel，系统自动与当前库存对比，生成入库 / 出库记录。
+        </p>
+
+        <div class="sync-fields">
+          <!-- 同步日期 -->
+          <div class="sync-field">
+            <label class="sync-label">同步日期</label>
+            <input v-model="syncDate" type="date" class="sync-date-input" />
+          </div>
+
+          <!-- 文件选择 -->
+          <div class="sync-field">
+            <label class="sync-label">库存文件</label>
+            <div class="file-row">
+              <button class="file-pick-btn" @click="triggerFilePick">选择 Excel 文件</button>
+              <span class="file-name">{{ syncFile ? syncFile.name : '未选择文件' }}</span>
+              <input
+                ref="syncFileInput"
+                type="file"
+                accept=".xlsx,.xls"
+                style="display:none"
+                @change="onFileChange"
+              />
+            </div>
+          </div>
+
+          <!-- 预览按钮 -->
+          <div class="sync-field sync-field--btn">
+            <BaseButton
+              :disabled="!syncFile || previewLoading"
+              :loading="previewLoading"
+              @click="doPreview"
+            >
+              预览同步结果
+            </BaseButton>
+          </div>
+        </div>
+      </div>
+
+      <!-- 预览结果区域 -->
+      <template v-if="previewResult">
+
+        <!-- 统计卡片 -->
+        <div class="sync-stat-grid">
+          <div class="sync-stat sync-stat--blue">
+            <div class="sync-stat-val">{{ previewResult.newDrugCount }}</div>
+            <div class="sync-stat-label">新增药品</div>
+          </div>
+          <div class="sync-stat sync-stat--green">
+            <div class="sync-stat-val">{{ previewResult.inCount }}</div>
+            <div class="sync-stat-label">入库记录</div>
+          </div>
+          <div class="sync-stat sync-stat--orange">
+            <div class="sync-stat-val">{{ previewResult.outCount }}</div>
+            <div class="sync-stat-label">出库记录</div>
+          </div>
+          <div class="sync-stat sync-stat--gray">
+            <div class="sync-stat-val">{{ previewResult.unchangedCount }}</div>
+            <div class="sync-stat-label">无变化</div>
+          </div>
+        </div>
+
+        <!-- 变化详情 -->
+        <div class="sync-detail-wrap">
+          <div class="sync-detail-header">
+            <span class="sync-detail-title">变化明细</span>
+            <span class="sync-detail-tip">仅显示有变化的记录</span>
+          </div>
+
+          <EmptyState
+            v-if="changedDetails.length === 0"
+            text="所有药品库存均无变化"
+            icon="✅"
+          />
+
+          <template v-else>
+            <!-- PC 表格 -->
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>药品编码</th>
+                    <th>药品名称</th>
+                    <th>变化类型</th>
+                    <th class="num-cell">原库存</th>
+                    <th class="num-cell">新库存</th>
+                    <th class="num-cell">差值</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(row, idx) in changedDetails" :key="idx">
+                    <td class="mono">{{ row.drugCode || '—' }}</td>
+                    <td class="bold-cell">{{ row.drugName }}</td>
+                    <td>
+                      <span class="change-tag" :class="changeTypeClass(row.changeType)">
+                        {{ row.changeType }}
+                      </span>
+                    </td>
+                    <td class="num-cell dim">{{ row.oldQuantity }}</td>
+                    <td class="num-cell">{{ row.newQuantity }}</td>
+                    <td class="num-cell">
+                      <span :class="diffClass(row.changeType)">
+                        {{ row.changeType === 'IN' || row.changeType === 'NEW'
+                            ? `+${row.diff}` : `-${Math.abs(row.diff)}` }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- 手机端卡片 -->
+            <div class="card-list">
+              <div v-for="(row, idx) in changedDetails" :key="idx" class="data-card">
+                <div class="card-top">
+                  <span class="card-name">{{ row.drugName }}</span>
+                  <span class="change-tag" :class="changeTypeClass(row.changeType)">
+                    {{ row.changeType }}
+                  </span>
+                </div>
+                <div class="card-body">
+                  <div class="card-row">
+                    <span class="card-key">药品编码</span>
+                    <span class="mono">{{ row.drugCode || '—' }}</span>
+                  </div>
+                  <div class="card-row">
+                    <span class="card-key">原库存 → 新库存</span>
+                    <span>{{ row.oldQuantity }} → {{ row.newQuantity }}</span>
+                  </div>
+                  <div class="card-row">
+                    <span class="card-key">差值</span>
+                    <span :class="diffClass(row.changeType)">
+                      {{ row.changeType === 'IN' || row.changeType === 'NEW'
+                          ? `+${row.diff}` : `-${Math.abs(row.diff)}` }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <!-- 底部操作按钮 -->
+        <div class="sync-footer">
+          <BaseButton type="secondary" @click="resetSync">重新选择</BaseButton>
+          <BaseButton :loading="confirmLoading" @click="doConfirm">确认同步</BaseButton>
+        </div>
+
+      </template>
+    </div>
+
+    <!-- ========================================================
          新增入库弹窗
     ========================================================= -->
     <BaseModal
@@ -380,6 +546,8 @@ import {
   type DrugOption,
   type SupplierOption,
   type StockInForm,
+  type SyncDetail,
+  type SyncPreviewResult,
 } from '@/api/stock'
 import { formatMoney, formatDate, formatDateTime } from '@/utils/format'
 import { showSuccess, showError } from '@/utils/toast'
@@ -398,10 +566,10 @@ async function loadOptions(): Promise<void> {
 }
 
 // ── Tab 切换 ───────────────────────────────────────────────
-const activeTab      = ref<'records' | 'warnings'>('records')
+const activeTab      = ref<'records' | 'warnings' | 'sync'>('records')
 const warningsLoaded = ref(false)
 
-function switchTab(tab: 'records' | 'warnings'): void {
+function switchTab(tab: 'records' | 'warnings' | 'sync'): void {
   activeTab.value = tab
   if (tab === 'warnings' && !warningsLoaded.value) {
     loadExpiring()
@@ -588,6 +756,75 @@ async function loadLow(): Promise<void> {
   } finally {
     lowLoading.value = false
   }
+}
+
+// ── Tab3 库存同步 ──────────────────────────────────────────
+const syncDate      = ref(today)
+const syncFile      = ref<File | null>(null)
+const syncFileInput = ref<HTMLInputElement | null>(null)
+const previewLoading  = ref(false)
+const confirmLoading  = ref(false)
+const previewResult   = ref<SyncPreviewResult | null>(null)
+
+// 仅展示有变化的记录
+const changedDetails = computed((): SyncDetail[] =>
+  (previewResult.value?.details ?? []).filter(d => d.changeType !== 'UNCHANGED')
+)
+
+function triggerFilePick(): void { syncFileInput.value?.click() }
+
+function onFileChange(e: Event): void {
+  const input = e.target as HTMLInputElement
+  const file  = input.files?.[0] ?? null
+  syncFile.value    = file
+  previewResult.value = null  // 换文件时清空上次预览
+  input.value = ''
+}
+
+async function doPreview(): Promise<void> {
+  if (!syncFile.value) return
+  previewLoading.value = true
+  try {
+    const res = await stockApi.syncPreview(syncFile.value, syncDate.value)
+    previewResult.value = res.data
+  } catch (e: unknown) {
+    showError(e instanceof Error ? e.message : '预览失败')
+  } finally {
+    previewLoading.value = false
+  }
+}
+
+async function doConfirm(): Promise<void> {
+  if (!syncFile.value) return
+  confirmLoading.value = true
+  try {
+    await stockApi.syncConfirm(syncFile.value, syncDate.value)
+    showSuccess('同步完成，已生成相关记录')
+    resetSync()
+    switchTab('records')
+    loadRecords()
+  } catch (e: unknown) {
+    showError(e instanceof Error ? e.message : '同步失败')
+  } finally {
+    confirmLoading.value = false
+  }
+}
+
+function resetSync(): void {
+  syncFile.value      = null
+  previewResult.value = null
+  if (syncFileInput.value) syncFileInput.value.value = ''
+}
+
+function changeTypeClass(type: string): string {
+  if (type === 'NEW')       return 'ct-new'
+  if (type === 'IN')        return 'ct-in'
+  if (type === 'OUT')       return 'ct-out'
+  return 'ct-unchanged'
+}
+
+function diffClass(type: string): string {
+  return (type === 'IN' || type === 'NEW') ? 'diff-in' : 'diff-out'
 }
 
 // ── 初始化 ─────────────────────────────────────────────────
@@ -948,6 +1185,189 @@ onMounted(() => {
 }
 .calc-val { color: var(--primary-color); font-weight: 700; font-size: 16px; }
 
+/* ── 库存同步 ───────────────────────────────────────────── */
+.sync-upload-card {
+  background: #fff;
+  border-radius: var(--border-radius-large);
+  box-shadow: var(--box-shadow-card);
+  padding: 20px 24px;
+}
+
+.sync-desc {
+  margin: 0 0 18px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.sync-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.sync-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sync-field--btn { justify-content: flex-end; }
+
+.sync-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.sync-date-input {
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--border-radius-base);
+  font-size: 14px;
+  color: var(--text-primary);
+  background: #fff;
+  outline: none;
+  font-family: inherit;
+  transition: var(--transition-fast);
+  width: 148px;
+  box-sizing: border-box;
+}
+
+.sync-date-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(19, 194, 194, .1);
+}
+
+.file-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.file-pick-btn {
+  height: 36px;
+  padding: 0 16px;
+  border: 1px dashed var(--primary-color);
+  border-radius: var(--border-radius-base);
+  background: rgba(19, 194, 194, .04);
+  color: var(--primary-color);
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.file-pick-btn:hover { background: rgba(19, 194, 194, .1); }
+
+.file-name {
+  font-size: 13px;
+  color: var(--text-secondary);
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 统计卡片 */
+.sync-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.sync-stat {
+  padding: 16px 20px;
+  border-radius: var(--border-radius-large);
+  box-shadow: var(--box-shadow-card);
+  text-align: center;
+}
+
+.sync-stat-val {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.sync-stat-label {
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.sync-stat--blue   { background: rgba(24, 144, 255, .07); }
+.sync-stat--blue   .sync-stat-val   { color: #1890ff; }
+.sync-stat--blue   .sync-stat-label { color: #1890ff; opacity: .8; }
+
+.sync-stat--green  { background: rgba(82, 196, 26, .07); }
+.sync-stat--green  .sync-stat-val   { color: var(--success-color); }
+.sync-stat--green  .sync-stat-label { color: var(--success-color); opacity: .8; }
+
+.sync-stat--orange { background: rgba(250, 140, 22, .08); }
+.sync-stat--orange .sync-stat-val   { color: var(--warning-color); }
+.sync-stat--orange .sync-stat-label { color: var(--warning-color); opacity: .8; }
+
+.sync-stat--gray   { background: rgba(144, 147, 153, .08); }
+.sync-stat--gray   .sync-stat-val   { color: var(--info-color); }
+.sync-stat--gray   .sync-stat-label { color: var(--info-color); opacity: .8; }
+
+/* 变化明细 */
+.sync-detail-wrap {
+  background: #fff;
+  border-radius: var(--border-radius-large);
+  box-shadow: var(--box-shadow-card);
+  overflow: hidden;
+}
+
+.sync-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-lighter);
+}
+
+.sync-detail-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.sync-detail-tip {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* 变化类型标签 */
+.change-tag {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ct-new       { background: rgba(24, 144, 255, .1);  color: #1890ff; }
+.ct-in        { background: rgba(82, 196, 26, .1);   color: var(--success-color); }
+.ct-out       { background: rgba(250, 140, 22, .12); color: var(--warning-color); }
+.ct-unchanged { background: rgba(144, 147, 153, .1); color: var(--info-color); }
+
+/* 差值颜色 */
+.diff-in  { color: var(--success-color); font-weight: 600; font-variant-numeric: tabular-nums; }
+.diff-out { color: var(--warning-color); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* 底部操作 */
+.sync-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
 /* ── 响应式 ─────────────────────────────────────────────── */
 @media (max-width: 767px) {
   .table-wrap { display: none; }
@@ -966,5 +1386,15 @@ onMounted(() => {
   .warning-header { padding: 14px 16px; }
 
   .expire-query { width: 100%; }
+
+  .sync-stat-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .sync-stat { padding: 12px 10px; }
+  .sync-stat-val { font-size: 22px; }
+
+  .sync-fields { flex-direction: column; align-items: stretch; }
+  .sync-date-input { width: 100%; }
+  .file-name { max-width: 100%; }
+
+  .sync-footer { flex-direction: column; }
 }
 </style>

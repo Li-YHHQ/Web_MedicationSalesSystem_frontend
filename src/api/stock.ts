@@ -92,6 +92,23 @@ export interface LowStockItem {
   stockMin?: number
 }
 
+export interface SyncDetail {
+  drugCode: string
+  drugName: string
+  changeType: 'NEW' | 'IN' | 'OUT' | 'UNCHANGED'
+  oldQuantity: number
+  newQuantity: number
+  diff: number
+}
+
+export interface SyncPreviewResult {
+  newDrugCount: number
+  inCount: number
+  outCount: number
+  unchangedCount: number
+  details: SyncDetail[]
+}
+
 export interface StockInForm {
   drugId: number
   batchNo: string
@@ -153,4 +170,20 @@ export const stockApi = {
   // 供应商下拉（全量）
   getSupplierOptions: (): Promise<ApiResponse<SupplierOption[]>> =>
     http.get<SupplierOption[]>('/suppliers/all'),
+
+  // 库存同步预览
+  syncPreview: (file: File, syncDate: string): Promise<ApiResponse<SyncPreviewResult>> => {
+    const fd = new FormData()
+    fd.append('file', file)
+    fd.append('syncDate', syncDate)
+    return http.post<SyncPreviewResult>('/stock/sync/preview', fd)
+  },
+
+  // 库存同步确认执行
+  syncConfirm: (file: File, syncDate: string): Promise<ApiResponse<void>> => {
+    const fd = new FormData()
+    fd.append('file', file)
+    fd.append('syncDate', syncDate)
+    return http.post<void>('/stock/sync/confirm', fd)
+  },
 }
