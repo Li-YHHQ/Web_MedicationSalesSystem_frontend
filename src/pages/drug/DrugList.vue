@@ -331,7 +331,7 @@ async function loadData(): Promise<void> {
     const params: Record<string, unknown> = { page: page.value, size: PAGE_SIZE }
     if (search.keyword.trim()) params.keyword  = search.keyword.trim()
     if (search.category)       params.category = search.category
-    if (search.status !== '')  params.status   = Number(search.status)
+    params.status = search.status !== '' ? Number(search.status) : 1
 
     const res = await drugApi.list(params)
     list.value  = res.data.list
