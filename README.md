@@ -1,352 +1,170 @@
-# 药品销售系统 - 前端
+# 药店管理系统 — 前端
 
-基于 Vue 3 + TypeScript + Vite 构建的现代化药品销售系统前端应用，提供完整的电商功能和后台管理能力。
+基于 Vue 3 + TypeScript + Vite 构建的药店管理系统前端，提供药品、库存、供应商、财务的全流程管理能力。
 
-## 项目简介
+## 功能模块
 
-这是一个功能完善的药品电商平台前端系统，支持用户浏览药品、在线购买、订单管理等功能，同时为管理员提供了完整的后台管理界面。
-
-### 主要特性
-
-**用户端功能**
-- 药品浏览与搜索
-- 分类筛选
-- 购物车管理
-- 订单创建与支付
-- 订单追踪（待支付、待发货、待收货、已完成）
-- 个人信息管理
-- 轮播图展示
-
-**管理端功能**
-- 药品管理（增删改查）
-- 分类管理
-- 轮播图管理
-- 订单管理（发货处理）
-- 用户管理
-- 文件上传（图片）
+| 模块 | 路由 | 说明 |
+|------|------|------|
+| 数据看板 | `/dashboard` | 统计概览、财务趋势折线图（原生 SVG） |
+| 药品管理 | `/drugs` | 药品 CRUD、Excel 导入/导出、状态管理（软删除） |
+| 供应商管理 | `/supplier` | 供应商 CRUD、启用/停用 |
+| 入库管理 | `/stock/in` | 入库记录、预警信息（近效期/库存不足）、库存同步（Excel 对比差异） |
+| 出库管理 | `/stock/out` | 出库记录（销售/损耗/退货）、药品批次联动、数量校验 |
+| 效期管理 | `/expire` | 效期预警（30/60/90天分级）、库存预警（缺口计算） |
+| 财务统计 | `/finance` | 汇总卡片、每日明细、销售额/利润趋势折线图 |
 
 ## 技术栈
 
-### 核心框架
-- **Vue 3.4+** - 渐进式 JavaScript 框架
-- **TypeScript** - JavaScript 的超集，提供类型安全
-- **Vite 5.0+** - 下一代前端构建工具
+- **Vue 3.4** — Composition API，`<script setup>` 语法
+- **TypeScript** — 严格类型，接口文件按模块拆分
+- **Vite 5** — 开发服务器 + 生产构建（terser 压缩）
+- **Vue Router 4** — 路由守卫，未登录自动跳转 `/login`
+- **Pinia 2** — 用户状态管理
+- **Axios** — 请求/响应拦截器（全局 Loading、统一错误提示、401 自动退登）
 
-### 状态与路由
-- **Vue Router 4** - 官方路由管理器
-- **Pinia 2** - 新一代状态管理库
-
-### HTTP 与工具
-- **Axios** - 基于 Promise 的 HTTP 客户端
-- **ESLint** - 代码质量检查工具
+> 无任何第三方 UI 库，所有组件均自行实现。
 
 ## 项目结构
 
 ```
 src/
-├── api/                    # API 接口定义
-│   ├── banners.ts         # 轮播图接口
-│   ├── cart.ts            # 购物车接口
-│   ├── categories.ts      # 分类接口
-│   ├── files.ts           # 文件上传接口
-│   ├── orders.ts          # 订单接口
-│   ├── products.ts        # 药品接口
-│   └── users.ts           # 用户接口
-├── assets/                 # 静态资源
-│   └── styles/            # 全局样式
-├── components/             # 组件目录
-│   ├── common/            # 通用组件（Header, Footer, Sidebar）
-│   ├── course/            # 业务组件（待清理）
-│   └── ui/                # UI 基础组件（Button, Input, Modal）
-├── composables/           # 组合式函数
-├── layouts/               # 布局组件
-│   ├── DefaultLayout.vue  # 默认布局（含导航）
-│   └── EmptyLayout.vue    # 空白布局
-├── pages/                 # 页面组件
-│   ├── admin/             # 管理端页面
-│   │   ├── AdminBanners.vue
-│   │   ├── AdminCategories.vue
-│   │   ├── AdminOrders.vue
-│   │   ├── AdminProducts.vue
-│   │   └── AdminUsers.vue
-│   ├── auth/              # 认证页面
-│   │   ├── Login.vue
-│   │   └── Register.vue
-│   ├── cart/              # 购物车页面
-│   ├── home/              # 首页
-│   ├── me/                # 个人中心
-│   ├── order/             # 订单页面
-│   └── product/           # 药品页面
-├── router/                # 路由配置
-├── stores/                # Pinia 状态管理
-│   ├── user.ts           # 用户状态
-│   └── course.ts         # 业务状态
-├── types/                 # TypeScript 类型定义
-├── utils/                 # 工具函数
-│   ├── request.ts        # HTTP 请求封装
-│   ├── validation.ts     # 表单验证
-│   └── format.ts         # 数据格式化
-├── App.vue               # 根组件
-└── main.ts               # 应用入口
+├── api/                    # 接口层（按模块拆分）
+│   ├── dashboard.ts        # 看板
+│   ├── drug.ts             # 药品
+│   ├── finance.ts          # 财务
+│   ├── stock.ts            # 库存（入库/出库/批次/预警/同步）
+│   ├── supplier.ts         # 供应商
+│   └── users.ts            # 用户认证
+├── components/
+│   ├── common/
+│   │   ├── ConfirmDialog.vue   # 删除二次确认
+│   │   ├── EmptyState.vue      # 空数据占位
+│   │   ├── LoadingSpinner.vue  # 全屏加载遮罩
+│   │   └── Toast.vue           # 消息提示（Teleport）
+│   └── ui/
+│       ├── BaseButton.vue      # 按钮（primary/secondary/danger，loading 态）
+│       ├── BaseInput.vue       # 输入框
+│       └── BaseModal.vue       # 弹窗（flex 布局，footer 不被 body 遮挡）
+├── layouts/
+│   ├── MainLayout.vue      # 主布局（PC 侧边栏 + 移动端底部 Tab）
+│   └── EmptyLayout.vue     # 空白布局（登录页）
+├── pages/
+│   ├── auth/Login.vue
+│   ├── dashboard/Dashboard.vue
+│   ├── drug/DrugList.vue
+│   ├── expire/ExpireList.vue
+│   ├── finance/Finance.vue
+│   ├── stock/StockIn.vue
+│   ├── stock/StockOut.vue
+│   └── supplier/SupplierList.vue
+├── router/index.ts         # 路由配置 + 守卫
+├── stores/user.ts          # Pinia 用户 store
+├── utils/
+│   ├── format.ts           # formatMoney / formatDate / formatDateTime / formatNumber
+│   ├── loading.ts          # 计数器式全局 Loading（并发请求安全）
+│   ├── request.ts          # Axios 封装（自动处理 FormData Content-Type）
+│   └── toast.ts            # 响应式 Toast 单例
+├── App.vue                 # 根组件（注册 Toast、LoadingSpinner，监听网络状态）
+└── main.ts
 ```
-
-## 功能模块详解
-
-### 用户认证
-- 用户注册
-- 用户登录
-- Token 认证
-- 角色权限控制（USER/ADMIN）
-
-### 药品管理
-- 药品列表展示（支持分页）
-- 药品详情查看
-- 按分类筛选
-- 按价格范围筛选
-- 关键词搜索
-- 处方药/非处方药标识
-
-### 购物车
-- 添加商品到购物车
-- 修改商品数量
-- 删除购物车商品
-- 清空购物车
-- 实时计算总价
-
-### 订单流程
-- 从购物车创建订单
-- 填写收货信息
-- 订单支付
-- 查看订单列表
-- 订单详情查看
-- 确认收货
-- 取消订单
-
-### 后台管理
-**分类管理**
-- 创建/编辑/删除分类
-- 分类排序
-- 启用/禁用状态
-
-**药品管理**
-- 添加新药品（含图片上传）
-- 编辑药品信息
-- 药品上下架
-- 库存管理
-
-**轮播图管理**
-- 上传轮播图
-- 设置跳转链接
-- 排序调整
-- 启用/禁用
-
-**订单管理**
-- 查看所有订单
-- 订单状态筛选
-- 订单发货操作
-
-**用户管理**
-- 查看用户列表
-- 用户信息查询
 
 ## 快速开始
 
 ### 环境要求
 
-- Node.js >= 16.0.0
-- npm >= 7.0.0 或 yarn >= 1.22.0
+- Node.js >= 16
+- npm >= 7
 
-### 安装
+### 安装与运行
 
 ```bash
-# 克隆项目
-git clone <repository-url>
-cd Web_MedicationSalesSystem_frontend
-
-# 安装依赖
 npm install
+npm run dev        # 开发服务器（默认 http://localhost:5173）
+npm run build      # 生产构建（输出到 dist/）
+npm run preview    # 预览生产构建
+npm run lint       # ESLint 检查
+npm run type-check # TypeScript 类型检查
 ```
 
-### 开发
+### 环境变量
 
-```bash
-# 启动开发服务器
-npm run dev
-
-# 访问 http://localhost:5173
-```
-
-### 构建
-
-```bash
-# 构建生产版本
-npm run build
-
-# 预览生产构建
-npm run preview
-```
-
-### 代码检查
-
-```bash
-# 运行 ESLint
-npm run lint
-
-# 类型检查
-npm run type-check
-```
-
-## 环境配置
-
-项目使用 Vite 的环境变量机制，支持多环境配置：
-
-### 配置文件
-
-- `.env` - 所有环境的默认配置
-- `.env.development` - 开发环境配置
-- `.env.production` - 生产环境配置
-
-### 主要配置项
+在项目根目录创建 `.env.development` / `.env.production`：
 
 ```env
-# 应用标题
-VITE_APP_TITLE=药品销售系统
-
-# 应用版本
-VITE_APP_VERSION=1.0.0
-
-# API 基础地址
 VITE_API_BASE_URL=http://localhost:8080
-
-# 文件上传地址
-VITE_UPLOAD_URL=http://localhost:8080/upload
-
-# 环境标识
-VITE_APP_ENV=development
 ```
 
-## API 接口
+所有 API 请求会自动拼接为 `${VITE_API_BASE_URL}/api/...`。
 
-### 用户相关
-- `POST /users/register` - 用户注册
-- `POST /users/login` - 用户登录
-- `GET /users/me` - 获取当前用户信息
-- `PUT /users/me` - 更新用户信息
+## API 接口对应关系
 
-### 药品相关
-- `GET /products` - 获取药品列表
-- `GET /products/:id` - 获取药品详情
-- `GET /products/:id/reviews` - 获取药品评价
+### 认证
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/users/login` | 登录，返回 token |
 
-### 购物车相关
-- `GET /cart` - 获取购物车
-- `POST /cart/items` - 添加商品到购物车
-- `PATCH /cart/items/:id` - 更新购物车商品数量
-- `DELETE /cart/items/:id` - 删除购物车商品
-- `DELETE /cart` - 清空购物车
+### 药品
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/drugs` | 分页查询（支持 keyword/category/status 过滤） |
+| POST | `/api/drugs` | 新增 |
+| PUT | `/api/drugs/{id}` | 更新 |
+| DELETE | `/api/drugs/{id}` | 软删除（status→0） |
+| POST | `/api/drugs/import` | Excel 导入 |
+| GET | `/api/drugs/export` | Excel 导出 |
 
-### 订单相关
-- `POST /orders` - 从购物车创建订单
-- `GET /orders` - 获取我的订单列表
-- `GET /orders/:id` - 获取订单详情
-- `POST /orders/:id/pay` - 支付订单
-- `POST /orders/:id/receive` - 确认收货
-- `POST /orders/:id/cancel` - 取消订单
+### 供应商
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/suppliers` | 分页查询 |
+| GET | `/api/suppliers/all` | 全量列表（下拉用） |
+| POST | `/api/suppliers` | 新增 |
+| PUT | `/api/suppliers/{id}` | 更新 |
+| DELETE | `/api/suppliers/{id}` | 删除 |
 
-### 管理端接口
-- `GET /admin/products` - 管理端药品列表
-- `POST /admin/products` - 创建药品
-- `PUT /admin/products/:id` - 更新药品
-- `DELETE /admin/products/:id` - 删除药品
-- `GET /admin/categories` - 分类列表
-- `POST /admin/categories` - 创建分类
-- `GET /admin/banners` - 轮播图列表
-- `POST /admin/banners` - 创建轮播图
-- `GET /admin/orders` - 订单列表
-- `POST /admin/orders/:id/ship` - 订单发货
-- `GET /admin/users` - 用户列表
-- `POST /admin/files/images` - 图片上传
+### 库存
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/stock/in` | 入库 |
+| GET | `/api/stock/in` | 入库记录分页查询 |
+| POST | `/api/stock/out` | 出库（销售/损耗/退货） |
+| GET | `/api/stock/out` | 出库记录分页查询 |
+| GET | `/api/stock/batches/{drugId}` | 药品批次列表 |
+| GET | `/api/stock/expire` | 近效期批次 |
+| GET | `/api/stock/low` | 库存不足批次 |
+| POST | `/api/stock/sync/preview` | 库存同步预览（multipart/form-data） |
+| POST | `/api/stock/sync/confirm` | 库存同步确认（multipart/form-data） |
 
-## 路由说明
+### 财务
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/finance/summary` | 汇总数据（含每日列表） |
+| GET | `/api/finance/daily` | 每日明细 |
+| POST | `/api/finance/sync` | 同步今日数据 |
 
-### 公开路由
-- `/` - 首页
-- `/login` - 登录
-- `/register` - 注册
-- `/products` - 药品列表
-- `/products/:id` - 药品详情
+## 关键设计说明
 
-### 需要登录
-- `/cart` - 购物车
-- `/orders` - 我的订单
-- `/orders/:id` - 订单详情
-- `/me` - 个人中心
+### 请求层
+- Axios 实例默认 `Content-Type: application/json`，拦截器检测到 `FormData` 时自动删除该头，让浏览器补全 `multipart/form-data; boundary=...`
+- 401 响应自动清空 token 并跳转登录页
+- 计数器式 Loading：多个并发请求时只在全部完成后才隐藏遮罩
 
-### 管理员专属
-- `/admin/categories` - 分类管理
-- `/admin/products` - 药品管理
-- `/admin/banners` - 轮播图管理
-- `/admin/orders` - 订单管理
-- `/admin/users` - 用户管理
+### 布局
+- **PC（> 767px）**：220px 固定侧边栏，支持库存子菜单折叠
+- **移动端（≤ 767px）**：顶部标题栏 + 底部 5 Tab 导航，库存 Tab 点击弹出底部选单
+- 响应式断点统一为 767px
 
-## 组件说明
+### 软删除兼容
+药品列表查询默认携带 `status=1`，过滤后端软删除记录；用户可通过筛选栏手动选择"停用"或"全部"。
 
-### UI 基础组件
-- `BaseButton` - 基础按钮组件，支持多种类型和尺寸
-- `BaseInput` - 基础输入框组件，支持验证
-- `BaseModal` - 基础模态框组件
-
-### 通用组件
-- `AppHeader` - 应用顶部导航栏
-- `AppSidebar` - 侧边栏导航
-- `AppFooter` - 应用底部
-- `LoadingSpinner` - 加载指示器
-
-## 开发规范
-
-### 代码风格
-- 使用 TypeScript 严格模式
-- 遵循 Vue 3 Composition API 风格
-- 组件使用 `<script setup>` 语法
-- 使用 ESLint 检查代码质量
-
-### 命名规范
-- **组件文件**: PascalCase（如 `ProductCard.vue`）
-- **工具文件**: camelCase（如 `request.ts`）
-- **常量**: UPPER_SNAKE_CASE（如 `API_BASE_URL`）
-- **变量/函数**: camelCase（如 `getUserInfo`）
-
-### Git 提交规范
-- `feat:` 新功能
-- `fix:` 修复 Bug
-- `docs:` 文档更新
-- `style:` 代码格式调整
-- `refactor:` 重构
-- `perf:` 性能优化
-- `test:` 测试相关
-- `chore:` 构建/工具变动
-
-## 部署
-
-### 构建生产版本
-
-```bash
-npm run build
-```
-
-构建产物将生成在 `dist` 目录下。
-
-### 部署到服务器
-
-将 `dist` 目录下的所有文件部署到 Web 服务器（Nginx、Apache 等）。
-
-### Nginx 配置示例
+## 部署（Nginx）
 
 ```nginx
 server {
     listen 80;
     server_name example.com;
-    root /var/www/medication-sales-frontend/dist;
+    root /var/www/dist;
     index index.html;
 
     location / {
@@ -363,35 +181,8 @@ server {
 
 ## 浏览器支持
 
-- Chrome >= 87
-- Firefox >= 78
-- Safari >= 14
-- Edge >= 88
-
-## 待优化项
-
-- [ ] 清理遗留的 course 相关代码
-- [ ] 完善错误处理机制
-- [ ] 添加单元测试
-- [ ] 添加 E2E 测试
-- [ ] 优化移动端适配
-- [ ] 添加药品评价功能
-- [ ] 实现支付接口对接
-- [ ] 添加搜索历史记录
-- [ ] 实现商品收藏功能
-
-## 许可证
-
-MIT License
+Chrome 87+、Firefox 78+、Safari 14+、Edge 88+
 
 ## 相关项目
 
-- 后端项目: [Web_MedicationSalesSystem_backend](待补充)
-
-## 贡献指南
-
-欢迎提交 Issue 和 Pull Request。
-
-## 技术支持
-
-如有问题，请提交 Issue 或联系开发团队。
+- 后端：[Web_MedicationSalesSystem_backend](待补充)
