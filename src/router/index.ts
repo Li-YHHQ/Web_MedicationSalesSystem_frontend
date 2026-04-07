@@ -21,6 +21,20 @@ const router = createRouter({
       ]
     },
 
+    // 注册页（无需认证）
+    {
+      path: '/register',
+      component: EmptyLayout,
+      children: [
+        {
+          path: '',
+          name: 'Register',
+          component: () => import('@/pages/auth/Register.vue'),
+          meta: { title: '注册' }
+        }
+      ]
+    },
+
     // 主布局路由（需要认证）
     {
       path: '/',

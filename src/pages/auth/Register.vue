@@ -5,7 +5,7 @@
       <div class="login-header">
         <div class="login-logo">💊</div>
         <h1 class="login-title">药店管理系统</h1>
-        <p class="login-subtitle">请登录您的账号</p>
+        <p class="login-subtitle">创建新账号</p>
       </div>
 
       <!-- 表单 -->
@@ -17,7 +17,7 @@
             class="field-input"
             placeholder="请输入用户名"
             autocomplete="username"
-            @keyup.enter="handleLogin"
+            @keyup.enter="handleRegister"
           />
         </div>
 
@@ -28,22 +28,21 @@
             class="field-input"
             type="password"
             placeholder="请输入密码"
-            autocomplete="current-password"
-            @keyup.enter="handleLogin"
+            autocomplete="new-password"
+            @keyup.enter="handleRegister"
           />
         </div>
 
         <p v-if="error" class="error-msg">{{ error }}</p>
-        <p v-if="successMsg" class="success-msg">{{ successMsg }}</p>
 
-        <button class="login-btn" :disabled="loading" @click="handleLogin">
+        <button class="login-btn" :disabled="loading" @click="handleRegister">
           <span v-if="loading" class="btn-spinner"></span>
-          <span>{{ loading ? '登录中...' : '登 录' }}</span>
+          <span>{{ loading ? '注册中...' : '立即注册' }}</span>
         </button>
 
         <p class="register-hint">
-          没有账号？
-          <router-link to="/register" class="register-link">立即注册</router-link>
+          已有账号？
+          <router-link to="/login" class="register-link">返回登录</router-link>
         </p>
       </div>
     </div>
@@ -52,33 +51,34 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useUserStore } from '@/stores/user'
+import { useRouter } from 'vue-router'
+import { userApi } from '@/api/users'
 
 const router  = useRouter()
-const route   = useRoute()
-const userStore = useUserStore()
 
-const username   = ref('')
-const password   = ref('')
-const loading    = ref(false)
-const error      = ref('')
-const successMsg = ref((route.query.msg as string) ?? '')
+const username = ref('')
+const password = ref('')
+const loading  = ref(false)
+const error    = ref('')
 
-async function handleLogin(): Promise<void> {
-  if (!username.value.trim() || !password.value) {
-    error.value = '请输入用户名和密码'
+async function handleRegister(): Promise<void> {
+  if (!username.value.trim()) {
+    error.value = '请输入用户名'
+    return
+  }
+  if (!password.value) {
+    error.value = '请输入密码'
     return
   }
   loading.value = true
   error.value   = ''
-  const ok = await userStore.login({ username: username.value.trim(), password: password.value })
-  loading.value = false
-  if (ok) {
-    const redirect = (route.query.redirect as string) || '/'
-    router.replace(redirect)
-  } else {
-    error.value = userStore.error || '登录失败，请检查用户名和密码'
+  try {
+    await userApi.authRegister({ username: username.value.trim(), password: password.value })
+    router.replace({ path: '/login', query: { msg: '注册成功，请登录' } })
+  } catch (e: unknown) {
+    error.value = e instanceof Error ? e.message : '注册失败，请稍后重试'
+  } finally {
+    loading.value = false
   }
 }
 </script>
@@ -173,15 +173,6 @@ async function handleLogin(): Promise<void> {
   color: var(--danger-color);
   padding: 8px 12px;
   background: rgba(255, 77, 79, 0.06);
-  border-radius: var(--border-radius-base);
-}
-
-.success-msg {
-  margin: 0;
-  font-size: 13px;
-  color: var(--success-color);
-  padding: 8px 12px;
-  background: rgba(82, 196, 26, 0.08);
   border-radius: var(--border-radius-base);
 }
 
