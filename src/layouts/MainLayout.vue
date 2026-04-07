@@ -57,8 +57,12 @@
         </router-link>
       </nav>
 
-      <!-- 登出按钮 -->
+      <!-- 底部操作 -->
       <div class="sidebar-footer">
+        <button class="change-pwd-btn" @click="openChangePwd">
+          <span>🔒</span>
+          <span>修改密码</span>
+        </button>
         <button class="logout-btn" @click="handleLogout">
           <span>🚪</span>
           <span>退出登录</span>
@@ -113,6 +117,60 @@
       </router-link>
     </nav>
 
+    <!-- ===== 修改密码弹窗 ===== -->
+    <teleport to="body">
+      <div v-if="pwdModalVisible" class="pwd-overlay" @click="closePwdModal">
+        <div class="pwd-modal" @click.stop>
+          <div class="pwd-modal-header">
+            <span class="pwd-modal-title">修改密码</span>
+            <button class="pwd-modal-close" @click="closePwdModal">×</button>
+          </div>
+          <div class="pwd-modal-body">
+            <div class="pwd-field" :class="{ 'pwd-field--error': pwdErrors.oldPassword }">
+              <label class="pwd-label">旧密码</label>
+              <input
+                v-model="pwdForm.oldPassword"
+                type="password"
+                class="pwd-input"
+                placeholder="请输入旧密码"
+                autocomplete="current-password"
+              />
+              <span v-if="pwdErrors.oldPassword" class="pwd-err">{{ pwdErrors.oldPassword }}</span>
+            </div>
+            <div class="pwd-field" :class="{ 'pwd-field--error': pwdErrors.newPassword }">
+              <label class="pwd-label">新密码</label>
+              <input
+                v-model="pwdForm.newPassword"
+                type="password"
+                class="pwd-input"
+                placeholder="请输入新密码"
+                autocomplete="new-password"
+              />
+              <span v-if="pwdErrors.newPassword" class="pwd-err">{{ pwdErrors.newPassword }}</span>
+            </div>
+            <div class="pwd-field" :class="{ 'pwd-field--error': pwdErrors.confirmPassword }">
+              <label class="pwd-label">确认新密码</label>
+              <input
+                v-model="pwdForm.confirmPassword"
+                type="password"
+                class="pwd-input"
+                placeholder="请再次输入新密码"
+                autocomplete="new-password"
+              />
+              <span v-if="pwdErrors.confirmPassword" class="pwd-err">{{ pwdErrors.confirmPassword }}</span>
+            </div>
+          </div>
+          <div class="pwd-modal-footer">
+            <button class="pwd-btn pwd-btn--cancel" @click="closePwdModal">取消</button>
+            <button class="pwd-btn pwd-btn--confirm" :disabled="pwdSubmitting" @click="submitChangePwd">
+              <span v-if="pwdSubmitting" class="pwd-spinner"></span>
+              <span>{{ pwdSubmitting ? '提交中...' : '确认修改' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </teleport>
+
     <!-- 手机端库存子菜单遮罩 + 弹出面板 -->
     <transition name="slide-up">
       <div v-if="stockMenuVisible" class="stock-menu-overlay" @click="stockMenuVisible = false">
@@ -141,8 +199,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, reactive } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { userApi } from '@/api/users'
+import { showSuccess, showError } from '@/utils/toast'
 
 const router = useRouter()
 const route = useRoute()
@@ -183,6 +243,54 @@ function handleLogout(): void {
   localStorage.removeItem('token')
   localStorage.removeItem('user')
   router.replace('/login')
+}
+
+// ── 修改密码 ───────────────────────────────────────────────
+const pwdModalVisible = ref(false)
+const pwdSubmitting   = ref(false)
+
+const pwdForm = reactive({ oldPassword: '', newPassword: '', confirmPassword: '' })
+const pwdErrors = reactive({ oldPassword: '', newPassword: '', confirmPassword: '' })
+
+function openChangePwd(): void {
+  pwdForm.oldPassword = ''
+  pwdForm.newPassword = ''
+  pwdForm.confirmPassword = ''
+  pwdErrors.oldPassword = ''
+  pwdErrors.newPassword = ''
+  pwdErrors.confirmPassword = ''
+  pwdModalVisible.value = true
+}
+
+function closePwdModal(): void {
+  pwdModalVisible.value = false
+}
+
+function validatePwd(): boolean {
+  pwdErrors.oldPassword     = pwdForm.oldPassword     ? '' : '请输入旧密码'
+  pwdErrors.newPassword     = pwdForm.newPassword     ? '' : '请输入新密码'
+  pwdErrors.confirmPassword = pwdForm.confirmPassword ? '' : '请再次输入新密码'
+  if (!pwdErrors.confirmPassword && pwdForm.newPassword !== pwdForm.confirmPassword) {
+    pwdErrors.confirmPassword = '两次密码不一致'
+  }
+  return !pwdErrors.oldPassword && !pwdErrors.newPassword && !pwdErrors.confirmPassword
+}
+
+async function submitChangePwd(): Promise<void> {
+  if (!validatePwd()) return
+  pwdSubmitting.value = true
+  try {
+    await userApi.changePassword({
+      oldPassword: pwdForm.oldPassword,
+      newPassword: pwdForm.newPassword,
+    })
+    showSuccess('密码修改成功')
+    closePwdModal()
+  } catch (e: unknown) {
+    showError(e instanceof Error ? e.message : '修改失败')
+  } finally {
+    pwdSubmitting.value = false
+  }
 }
 </script>
 
@@ -330,10 +438,34 @@ function handleLogout(): void {
   font-weight: 600;
 }
 
-/* 登出按钮 */
+/* 底部按钮区 */
 .sidebar-footer {
   padding: 12px 8px;
   border-top: 1px solid var(--border-lighter);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.change-pwd-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: none;
+  border-radius: var(--border-radius-base);
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  font-family: inherit;
+}
+
+.change-pwd-btn:hover {
+  background: rgba(19, 194, 194, 0.08);
+  color: var(--primary-color);
 }
 
 .logout-btn {
@@ -528,6 +660,169 @@ function handleLogout(): void {
   .stock-menu-item:active {
     background: var(--bg-page);
   }
+}
+
+/* ── 修改密码弹窗 ────────────────────────────────────────── */
+.pwd-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.pwd-modal {
+  width: 100%;
+  max-width: 400px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.16);
+  overflow: hidden;
+}
+
+.pwd-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border-lighter);
+}
+
+.pwd-modal-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.pwd-modal-close {
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-base);
+  transition: var(--transition-fast);
+}
+
+.pwd-modal-close:hover {
+  background: var(--bg-page);
+  color: var(--text-primary);
+}
+
+.pwd-modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pwd-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.pwd-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.pwd-input {
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--border-radius-base);
+  font-size: 14px;
+  color: var(--text-primary);
+  background: #fff;
+  outline: none;
+  font-family: inherit;
+  transition: var(--transition-fast);
+  box-sizing: border-box;
+}
+
+.pwd-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(19, 194, 194, 0.12);
+}
+
+.pwd-input::placeholder {
+  color: var(--text-placeholder);
+}
+
+.pwd-field--error .pwd-input {
+  border-color: var(--danger-color);
+}
+
+.pwd-err {
+  font-size: 12px;
+  color: var(--danger-color);
+}
+
+.pwd-modal-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--border-lighter);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.pwd-btn {
+  height: 36px;
+  padding: 0 20px;
+  border-radius: var(--border-radius-base);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pwd-btn--cancel {
+  background: #fff;
+  border: 1px solid var(--border-base);
+  color: var(--text-regular);
+}
+
+.pwd-btn--cancel:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.pwd-btn--confirm {
+  background: var(--primary-color);
+  border: none;
+  color: #fff;
+}
+
+.pwd-btn--confirm:hover:not(:disabled) {
+  background: var(--primary-dark);
+}
+
+.pwd-btn--confirm:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.pwd-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
 }
 
 /* 动画 */
