@@ -39,7 +39,7 @@ export const userApi = {
     http.post<void>('/users/register', data) as unknown as Promise<ApiResponse<void>>,
 
   changePassword: (data: { oldPassword: string; newPassword: string }) =>
-    http.put<void>('/user/password', data) as unknown as Promise<ApiResponse<void>>,
+    http.put<void>('/users/password', data) as unknown as Promise<ApiResponse<void>>,
 
   login: (data: { username: string; password: string }) =>
     http.post<LoginResponse>('/users/login', data) as unknown as Promise<ApiResponse<LoginResponse>>,
