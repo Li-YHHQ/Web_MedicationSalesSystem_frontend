@@ -141,3 +141,7 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+dist.zip
+tests/.auth/
+test-results/
+echo

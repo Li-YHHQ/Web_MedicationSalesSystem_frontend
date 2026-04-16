@@ -38,7 +38,7 @@
       <input
         ref="fileInputEl"
         type="file"
-        accept=".xlsx"
+        accept=".xlsx,.xls"
         style="display:none"
         @change="handleImportFile"
       />
